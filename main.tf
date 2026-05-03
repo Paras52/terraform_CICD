@@ -2,25 +2,21 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~>5.0"
+      version = "~> 5.0"
     }
   }
 }
 
-# region
 provider "aws" {
-  region = "us-east-1"
+  region = "ap-south-1"
 }
 
-# nginx : install
-# nginx : SG -> inbound / outbound
-# nginx : inbound: 80, 22 -> ingress
-# nginx : outbound: all -> egress
-
+# ── Security Group ────────────────────────────────────────────────
 resource "aws_security_group" "nginx_sg" {
   name        = "nginx-sg"
   description = "Security group for nginx server"
 
+  # HTTP
   ingress {
     from_port   = 80
     to_port     = 80
@@ -28,6 +24,7 @@ resource "aws_security_group" "nginx_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # SSH
   ingress {
     from_port   = 22
     to_port     = 22
@@ -35,6 +32,7 @@ resource "aws_security_group" "nginx_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # All outbound
   egress {
     from_port   = 0
     to_port     = 0
@@ -42,22 +40,23 @@ resource "aws_security_group" "nginx_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  tags = { Name = "nginx-sg" }
 }
 
 # ── EC2 Instance ──────────────────────────────────────────────────
 resource "aws_instance" "nginx_server" {
-  ami             = "ami-091138d0f0d41ff90"
+  ami             = "ami-07a00cf47dbbc844c"
   instance_type   = "t3.micro"
   security_groups = [aws_security_group.nginx_sg.name]
 
   user_data = <<-SCRIPT
     #!/bin/bash
-    sudo apt update
-    sudo apt install nginx
+    sudo apt update -y
+    sudo apt install -y nginx
     systemctl start nginx
     systemctl enable nginx
     echo "<h1>Hello from Terraform + Nginx!</h1>" \
-      > /usr/share/nginx/html/index.html
+      > /var/www/html/index.html
   SCRIPT
 
   tags = { Name = "nginx-ec2-server" }
