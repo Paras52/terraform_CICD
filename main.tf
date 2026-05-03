@@ -8,7 +8,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "ap-south-1"
+  region = "us-east-1"
 }
 
 # ── Security Group ────────────────────────────────────────────────
@@ -45,7 +45,7 @@ resource "aws_security_group" "nginx_sg" {
 
 # ── EC2 Instance ──────────────────────────────────────────────────
 resource "aws_instance" "nginx_server" {
-  ami             = "ami-07a00cf47dbbc844c"
+  ami             = "ami-091138d0f0d41ff90"
   instance_type   = "t3.micro"
   security_groups = [aws_security_group.nginx_sg.name]
 
